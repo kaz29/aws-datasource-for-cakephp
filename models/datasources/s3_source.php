@@ -51,6 +51,10 @@ class S3Source extends DataSource
         'type' => 'string',
         'null' => false,
       ),
+      'option'=> array(
+        'type' => 'string',
+        'null' => false,
+      ),
       'body'=> array(
         'type' => 'binary',
         'null' => false,
@@ -148,12 +152,19 @@ class S3Source extends DataSource
 	  
 	  switch($model->table) {
 	  case 'objects':
+	    $option = Set::extract($data,'option');
+	    if ( !is_array($option) ) {
+        $option = array();
+	    }
+	    
+	    $option = am($option, array(
+        'body' => Set::extract($data,'body'),
+      ));
+
       $api_result = $this->s3->create_object(
         Set::extract($data,'bucket'),
         Set::extract($data,'filename'),
-        array(
-          'body' => Set::extract($data,'body'),
-        )
+        $option
       );
 
   	  if ( !$api_result->isOK() || $api_result->status != 200 ) {
